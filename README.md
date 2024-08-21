@@ -92,3 +92,4 @@ Sometimes, when you load a model the application closes in an exception, this co
 - Seconb (Arduino)
 - Befia/Taylor (CUDA Aimmy)
 - The Aimmy Developers, because this is just Aimmy with some mods.
+- Whoswhip (me) All I did was port Arduino movement to Cuda Aimmy 😭
