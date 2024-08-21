@@ -11,38 +11,13 @@ If you want to share Aimmy with your friends use our [website!](https://aimmy.de
 
 # Disclaimer
 This is a fork of [Aimmy](https://github.com/Babyhamsta/Aimmy/), if any problems ask us on [discord](discord.gg/aimmy).
-## What is CUDA
-> **What's CUDA?**
 
-```Cuda is pretty much just the better version of "DirectML" and uses Nividia's GPU power to make it more smoother and faster```
-
-> **What's DirectML?**
-
-```Think of it as a mid lvl AI that relies on your GPU to work good```
-
-> **How does the AI work?**
-
-```Using the imported models (pictures), it will then scan the game as you play and look for players that match the models (pictures)```
-
-## Setup (automatically)
-- Download and run LazyAimmySetupCuda ... thats it.
-
-### Install LazyAimmySetup
-
-[Dropbox](https://www.dropbox.com/scl/fi/impeduswsqr04uq59g4kj/LazyCudaAimmySetup.exe?rlkey=ka4oh9r12a7jqqbesild1ehu0&st=cxp33hin&dl=0)
-
-[4Shared](https://www.4shared.com/file/79lMDawZku/LazyCudaAimmySetup__2_.html)
-
-[PixelDrain](https://pixeldrain.com/u/NAhaSbKL)
-
-
-https://github.com/user-attachments/assets/0df379d1-958e-4e69-b6e2-24c5d8a7b7fd
-## Features and Advantages
+## Features and Advantages of Arduino
 - **HID Communication:** Utilizes HID instead of COM port communication, reducing detection risks in most games.
 - **Easy Setup:** Straightforward script upload process to your Arduino. Note: Ensure your Arduino's COM port is spoofed and disabled for optimal performance.
 - **Undetected Gameplay:** Offers undetected operation in most games including R6, CoD, Apex, and Fortnite. Detected in Valorant and CS2 FaceIt. (You will get banned on Fortnite if you don't spoof correctly. Keep that in mind.)
 
-## Limitations
+## Limitations of Arduino
 
 - **USB Host Shields:** Does not support USB Host Shields. If you know what you're doing then try this: https://www.unknowncheats.me/forum/valorant/642071-arduino-hid-mouse-free-libraries.html
 - **Chip Compatibility:** Specifically designed for Arduinos with an ATmega32U4 chip, such as the Leonardo R3. Other Arduinos might work by installing HoodLoader2 but the autospoofer won't work with those.
@@ -66,6 +41,34 @@ https://github.com/user-attachments/assets/0df379d1-958e-4e69-b6e2-24c5d8a7b7fd
 - If you have any other issue consider watching the video extra carefully and redoing it. If all else fails idk what to tell you because I don't want to help you on Discord. This isn't for some inexperienced users this is for people who desperately need Arduino for Aimmy before it ever becomes an official update.
 - If your Arduino has issues working in general, try using a different USB port and a better cable. I recommend the one that comes with the Arduino. A lot of times, using some random cable you have somewhere is bad because they aren't made for something as powerful as an Arduino
 - If COM ports aren't disabled after spoofing, make sure you have Arduino IDE installed correctly. If it is installed correctly, download this: https://github.com/Seconb/Aimmy-Arduino-Edition/releases/download/v1/USBCore.cpp  then go to C:\Program Files (x86)\Arduino\hardware\arduino\avr\cores\arduino and replace USBCore.cpp with the one you downloaded. Do the same for C:\Users\karab\AppData\Local\Arduino15\packages\arduino\hardware\avr\1.8.6\cores\arduino if you have that folder (not everyone has it).
+
+## What is CUDA
+> **What's CUDA?**
+
+```Cuda is pretty much just the better version of "DirectML" and uses Nividia's GPU power to make it more smoother and faster```
+
+> **What's DirectML?**
+
+```Think of it as a mid lvl AI that relies on your GPU to work good```
+
+> **How does the AI work?**
+
+```Using the imported models (pictures), it will then scan the game as you play and look for players that match the models (pictures)```
+
+## Setup (CUDA automatically)
+- Download and run LazyAimmySetupCuda ... thats it.
+
+### Install LazyAimmySetup
+
+[Dropbox](https://www.dropbox.com/scl/fi/impeduswsqr04uq59g4kj/LazyCudaAimmySetup.exe?rlkey=ka4oh9r12a7jqqbesild1ehu0&st=cxp33hin&dl=0)
+
+[4Shared](https://www.4shared.com/file/79lMDawZku/LazyCudaAimmySetup__2_.html)
+
+[PixelDrain](https://pixeldrain.com/u/NAhaSbKL)
+
+
+https://github.com/user-attachments/assets/0df379d1-958e-4e69-b6e2-24c5d8a7b7fd
+
 
 
 
