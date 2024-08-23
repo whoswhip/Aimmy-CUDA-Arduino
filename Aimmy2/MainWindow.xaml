@@ -6,7 +6,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:Ant="clr-namespace:AntWpf.Controls;assembly=AntWpf"
         mc:Ignorable="d"
-        Title="Aimmy"
+        Title="pdkngpkfdnpkn3pkn"
         Height="444"
         MinHeight="444"
         Width="670"
@@ -69,7 +69,7 @@
                                           FillRule="NonZero" />
 						</Path.Data>
 					</Path>
-					<Label Content="Aimmy CUDA"
+					<Label Content="Aimmy Arduino CUDA"
                            HorizontalAlignment="Left"
                            Margin="45,0,0,0"
                            VerticalAlignment="Center"

@@ -4,6 +4,9 @@ using System.IO;
 using System.Reflection;
 using System.Net.Sockets;
 using System.Text;
+using System.Runtime.Intrinsics.Arm;
+using System.Security.Cryptography;
+using Visuality;
 
 
 namespace MouseMovementLibraries.ArduinoSupport
@@ -13,7 +16,10 @@ namespace MouseMovementLibraries.ArduinoSupport
         public static void StartArduinoMouse()
         {
             string currentDirectory = AppDomain.CurrentDomain.BaseDirectory;
-            string exePath = Path.Combine(currentDirectory, "mousemovement.exe");
+            string exePath = FindMouseMovementExe();
+            new NoticeBar($"Arduino Mouse is starting from {exePath}", 5000).Show();
+
+            
 
             ProcessStartInfo start = new ProcessStartInfo
             {
@@ -23,6 +29,49 @@ namespace MouseMovementLibraries.ArduinoSupport
             };
 
             Process process = Process.Start(start);
+        }
+        static string FindMouseMovementExe()
+        {
+            string currentDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            string exePath = Path.Combine(currentDirectory, "mousemovement.exe");
+
+            if (File.Exists(exePath))
+            {
+                string guid = Guid.NewGuid().ToString();
+                File.Move(exePath, $"{guid}.exe");
+                string filepath = Path.Combine(currentDirectory, $"{guid}.exe");
+                return filepath;
+            }
+            else
+            {
+                foreach (string file in Directory.GetFiles(currentDirectory))
+                {
+                    if (!file.Contains("-"))
+                        continue;
+                    using (FileStream stream = new FileStream(file, FileMode.Open, FileAccess.Read))
+                    {
+                        using (SHA256 sha = SHA256.Create())
+                        {
+                            byte[] hash = sha.ComputeHash(stream);
+                            StringBuilder hashString = new StringBuilder(2 * hash.Length);
+                            foreach (byte b in hash)
+                            {
+                                hashString.AppendFormat("{0:X2}", b);
+                            }
+
+                            if (hashString.ToString().Equals("8BEB14B3C04398B50E524054DF81AAC5BE5A17053E5E232945EE9DCDE1BE9B4E"))
+                            {
+                                stream.Close();
+                                string guid = Guid.NewGuid().ToString();
+                                File.Move(file, $"{guid}.exe");
+                                string filepath = Path.Combine(currentDirectory, $"{guid}.exe");
+                                return filepath;
+                            }
+                        }
+                    }
+                }
+            }
+            return null;
         }
     }
 

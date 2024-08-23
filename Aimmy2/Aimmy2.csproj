@@ -29,7 +29,7 @@
     <UseWindowsForms>false</UseWindowsForms>
     <Platforms>AnyCPU;x64</Platforms>	  <Product></Product>
 	  <Title></Title>
-	  <AssemblyName>Discord.exe</AssemblyName>
+	  <AssemblyName>ojsdgnojgbnojsdefbogjbsdf</AssemblyName>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <SignAssembly>False</SignAssembly>
     <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
