@@ -89,7 +89,7 @@ Sometimes, when you load a model the application closes in an exception, this co
 
 ## Credits
 - [MouseInstruct Repository](https://github.com/khanxbahria/MouseInstruct) for their amazing HID library. Made mouse movement via Arduino easy.
-- Seconb (Arduino)
-- Befia/Taylor (CUDA Aimmy)
-- The Aimmy Developers, because this is just Aimmy with some mods.
+- [Seconb](https://github.com/seconb) ([Arduino](https://github.com/Seconb/Aimmy-Arduino-Edition))
+- [Befia/Taylor](https://github.com/TaylorIsBlue) ([CUDA Aimmy](https://github.com/TaylorIsBlue/Aimmy-CUDA))
+- [The Aimmy Developers](https://github.com/Babyhamsta/Aimmy), because this is just [Aimmy](https://github.com/Babyhamsta/Aimmy) with some mods.
 - Whoswhip (me) All I did was port Arduino movement to Cuda Aimmy 😭
