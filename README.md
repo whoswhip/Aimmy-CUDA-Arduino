@@ -10,7 +10,7 @@ Want to connect with us? Join our [Discord Server](https://discord.gg/aimmy)
 If you want to share Aimmy with your friends use our [website!](https://aimmy.dev/)
 
 # Disclaimer
-This is a fork of [Aimmy](https://github.com/Babyhamsta/Aimmy/), if any problems ask us on [discord](discord.gg/aimmy).
+This is a fork of [Aimmy](https://github.com/Babyhamsta/Aimmy/), if any problems ask us on [discord](https://discord.gg/aimmy).
 My exe will not be as secure as Seconb's as I don't have access to Themida which is the packer he is using, if you want you can download the demo and protect it yourself.
 
 ## Features and Advantages of Arduino
