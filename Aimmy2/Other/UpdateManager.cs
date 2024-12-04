@@ -18,7 +18,7 @@ namespace Aimmy2.Other
         public async Task CheckForUpdate(string currentVersion)
         {
             GithubManager githubManager = new();
-            var (latestVersion, latestZipUrl) = await githubManager.GetLatestReleaseInfo("TaylorIsBlue", "Aimmy-CUDA");
+            var (latestVersion, latestZipUrl) = await githubManager.GetLatestReleaseInfo("whoswhip", "Aimmy-CUDA-Arduino");
 
             if (string.IsNullOrEmpty(latestVersion) || string.IsNullOrEmpty(latestZipUrl))
             {

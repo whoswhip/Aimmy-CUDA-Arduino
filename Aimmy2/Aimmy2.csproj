@@ -36,10 +36,14 @@
 
   <ItemGroup>
     <None Remove="mousemovement.exe" />
+    <None Remove="mousemovement_protected.exe" />
   </ItemGroup>
 
   <ItemGroup>
     <Content Include="mousemovement.exe">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="mousemovement_protected.exe">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

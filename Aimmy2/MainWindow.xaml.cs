@@ -188,6 +188,8 @@ namespace Aimmy2
 
         private void Exit_Click(object sender, RoutedEventArgs e)
         {
+            StartArduino.MovementProcess.Kill();
+            StartArduino.MovementProcess.WaitForExit();
             Application.Current.Shutdown();
         }
 
@@ -1137,7 +1139,7 @@ namespace Aimmy2
         private async void CheckForUpdates_Click(object sender, RoutedEventArgs e)
         {
             UpdateManager updateManager = new UpdateManager();
-            await updateManager.CheckForUpdate("v2.2.0");
+            await updateManager.CheckForUpdate("v2.1.9");
             updateManager.Dispose();
         }
 

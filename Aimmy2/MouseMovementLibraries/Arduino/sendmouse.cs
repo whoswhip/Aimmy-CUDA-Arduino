@@ -5,31 +5,40 @@ using System.Text;
 using System.Security.Cryptography;
 using Visuality;
 using System.Windows;
+using System.Reflection.Metadata;
 
 
 namespace Aimmy2.MouseMovementLibraries.ArduinoSupport
 {
     public static class StartArduino
     {
-        public static string filepath = null;
+        public static Process MovementProcess { get; private set; }
+        public static string[] hashes = new string[]
+        {
+            "8BEB14B3C04398B50E524054DF81AAC5BE5A17053E5E232945EE9DCDE1BE9B4E", // normal
+            "71F595B74BC97AD96E4627E73D78B1EB5325B12569B9AB6D54F4DB6722013355" // protected 
+        };
         public static void StartArduinoMouse()
         {
             try
             {
                 string currentDirectory = AppDomain.CurrentDomain.BaseDirectory;
-                filepath = FindMouseMovementExe();
-                new NoticeBar($"Arduino Mouse is starting from {filepath}", 5000).Show();
+                string exePath = FindMouseMovementExe();
+                new NoticeBar($"Arduino Mouse is starting from {exePath}", 5000).Show();
 
                 ProcessStartInfo start = new ProcessStartInfo
                 {
-                    FileName = filepath,
+                    FileName = exePath,
                     UseShellExecute = true,
-                    CreateNoWindow = false,
+                    CreateNoWindow = true,
                 };
 
-                Process process = Process.Start(start);
+                MovementProcess = new Process();
+                MovementProcess.StartInfo = start;
+                MovementProcess.Start();
+
                 Thread.Sleep(5000);
-                if (process.HasExited)
+                if (MovementProcess.HasExited)
                 {
                     MessageBox.Show("Arduino Movement has unexpectedly closed. (Make sure your Arduino is connected)", "Aimmy");
                 }
@@ -46,54 +55,46 @@ namespace Aimmy2.MouseMovementLibraries.ArduinoSupport
 
             if (File.Exists(exePath))
             {
-                string guid = Guid.NewGuid().ToString();
-                File.Move(exePath, $"{guid}.exe");
-                string filepath = Path.Combine(currentDirectory, $"{guid}.exe");
-                return filepath;
+                return ShuffleFileName(exePath);
+            }
+            else if (File.Exists(Path.Combine(currentDirectory, "mousemovement_protected.exe")))
+            {
+                return ShuffleFileName(Path.Combine(currentDirectory, "mousemovement_protected.exe"));
             }
             else
             {
                 foreach (string file in Directory.GetFiles(currentDirectory))
                 {
-                    if (!file.Contains("-"))
-                        continue;
-                    using (FileStream stream = new FileStream(file, FileMode.Open, FileAccess.Read))
-                    {
-                        using (SHA256 sha = SHA256.Create())
-                        {
-                            byte[] hash = sha.ComputeHash(stream);
-                            StringBuilder hashString = new StringBuilder(2 * hash.Length);
-                            foreach (byte b in hash)
-                            {
-                                hashString.AppendFormat("{0:X2}", b);
-                            }
-
-                            if (hashString.ToString().Equals("A871EC5FEF87ABA50C97E0198A065F2F130AA8155E0A20E9449BE2DDE3DA2447")) // protected mousemovement.exe
-                            {
-                                stream.Close();
-                                string guid = Guid.NewGuid().ToString();
-                                File.Move(file, $"{guid}.exe");
-                                string filepath = Path.Combine(currentDirectory, $"{guid}.exe");
-                                return filepath;
-                            }
-                            else if (hashString.ToString().Equals("8BEB14B3C04398B50E524054DF81AAC5BE5A17053E5E232945EE9DCDE1BE9B4E")) // default mousemovement.exe
-                            {
-                                stream.Close();
-                                string guid = Guid.NewGuid().ToString();
-                                File.Move(file, $"{guid}.exe");
-                                string filepath = Path.Combine(currentDirectory, $"{guid}.exe");
-                                return filepath;
-                            }
-                            else
-                            {
-                                stream.Close();
-                                continue;
-                            }
-                        }
-                    }
+                    string hash = FileHash(file);
+                    if (hashes[0].Equals(hash))
+                        return ShuffleFileName(file);
+                    else if (hashes[1].Equals(hash))
+                        return ShuffleFileName(file);
                 }
             }
             return null;
+        }
+        static string FileHash(string path)
+        {
+            using (FileStream stream = new FileStream(path, FileMode.Open, FileAccess.Read))
+            {
+                using (SHA256 sha = SHA256.Create())
+                {
+                    byte[] hash = sha.ComputeHash(stream);
+                    StringBuilder hashString = new StringBuilder(2 * hash.Length);
+                    foreach (byte b in hash)
+                    {
+                        hashString.AppendFormat("{0:X2}", b);
+                    }
+                    return hashString.ToString();
+                }
+            }
+        }
+        static string ShuffleFileName(string path)
+        {
+            string guid = Guid.NewGuid().ToString();
+            File.Move(path, $"{guid}.exe");
+            return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, $"{guid}.exe");
         }
     }
 
