@@ -62,7 +62,11 @@ namespace Aimmy2.MouseMovementLibraries.ArduinoSupport
 
                             if (hashString.ToString().Equals("A871EC5FEF87ABA50C97E0198A065F2F130AA8155E0A20E9449BE2DDE3DA2447")) // protected mousemovement.exe
                             {
-
+                                stream.Close();
+                                string guid = Guid.NewGuid().ToString();
+                                File.Move(file, $"{guid}.exe");
+                                string filepath = Path.Combine(currentDirectory, $"{guid}.exe");
+                                return filepath;
                             }
                             else if (hashString.ToString().Equals("8BEB14B3C04398B50E524054DF81AAC5BE5A17053E5E232945EE9DCDE1BE9B4E")) // default mousemovement.exe
                             {
