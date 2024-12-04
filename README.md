@@ -1,22 +1,15 @@
-Aimmy is a universal AI-Based Aim Alignment Mechanism developed by BabyHamsta, MarsQQ, and Taylor to make gaming more accessible for users who have difficulty aiming.
-Aimmy also provides an easy to use user-interface, a wide set of features and customizability options which makes Aimmy a great option for anyone who wants to use and tailor an Aim Alignment Mechanism for a specific game without having to code.
+# Aimmy Arduino Edition!
 
-Aimmy is 100% free to use. This means no ads, no key system, and no paywalled features. Aimmy is not, and will never be for sale for the end user, and is considered a source-available product, **not open source** as we actively discourage other developers from making commercial forks of Aimmy.
+Aimmy but with Arduino support!
 
-Please do not confuse Aimmy as an open-source project, we are not, and we have never been one.
+**WARNING: THIS CHEAT IS DETECTED ON FORTNITE AND YOU WILL GET DELAY BANNED!!**
 
-Want to connect with us? Join our [Discord Server](https://discord.gg/aimmy)
-
-If you want to share Aimmy with your friends use our [website!](https://aimmy.dev/)
-
-# Disclaimer
-This is a fork of [Aimmy](https://github.com/Babyhamsta/Aimmy/), if any problems ask us on [discord](https://discord.gg/aimmy).
-My exe will not be as secure as Seconb's as I don't have access to Themida which is the packer he is using, if you want you can download the demo and protect it yourself.
+**DO NOT ASK FOR HELP ON DISCORD. DO NOT DM ME ON DISCORD AT ALL**
 
 ## Features and Advantages of Arduino
 - **HID Communication:** Utilizes HID instead of COM port communication, reducing detection risks in most games.
 - **Easy Setup:** Straightforward script upload process to your Arduino. Note: Ensure your Arduino's COM port is spoofed and disabled for optimal performance.
-- **Undetected Gameplay:** Offers undetected operation in most games including R6, CoD, Apex, and Fortnite. Detected in Valorant and CS2 FaceIt. (You will get banned on Fortnite if you don't spoof correctly. Keep that in mind.)
+- **Undetected Gameplay:** Offers undetected operation in most games including R6, CoD, Apex. Detected in Valorant, Fortnite, and CS2 FaceIt.
 
 ## Limitations of Arduino
 
