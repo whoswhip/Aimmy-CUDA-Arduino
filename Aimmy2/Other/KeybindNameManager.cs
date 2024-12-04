@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Windows.Input;
 
-namespace Other
+namespace Aimmy2.Other
 {
     internal class KeybindNameManager
     {

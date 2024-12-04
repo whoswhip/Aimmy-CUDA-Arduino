@@ -2,7 +2,7 @@
 using System.IO;
 using MessageBox = System.Windows.MessageBox;
 
-namespace Class
+namespace Aimmy2.Class
 {
     internal class SaveDictionary
     {

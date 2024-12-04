@@ -1,14 +1,12 @@
 using Aimmy2.Class;
+using Aimmy2.InputLogic;
 using Aimmy2.MouseMovementLibraries.GHubSupport;
+using Aimmy2.MouseMovementLibraries.RazerSupport;
+using Aimmy2.MouseMovementLibraries.ArduinoSupport;
 using Aimmy2.Other;
 using Aimmy2.UILibrary;
-using AimmyWPF.Class;
-using Class;
-using InputLogic;
+using Aimmy2.WinformsReplacement;
 using Microsoft.Win32;
-using MouseMovementLibraries.ArduinoSupport;
-using MouseMovementLibraries.RazerSupport;
-using Other;
 using System.Diagnostics;
 using System.IO;
 using System.Windows;
@@ -52,36 +50,46 @@ namespace Aimmy2
         {
             InitializeComponent();
 
-            if (Directory.GetCurrentDirectory().Contains("Temp"))
-            {
-                MessageBox.Show(
-                    "Hi, it is made aware that you are running Aimmy without extracting it from the zip file." +
-                    " Please extract Aimmy from the zip file or Aimmy will not be able to run properly." +
-                    "\n\nThank you.",
-                    "Aimmy V2"
-                    );
-            }
-
             CurrentScrollViewer = FindName("AimMenu") as ScrollViewer;
             if (CurrentScrollViewer == null) throw new NullReferenceException("CurrentScrollViewer is null");
 
             Dictionary.DetectedPlayerOverlay = DPWindow;
             Dictionary.FOVWindow = FOVWindow;
 
+            RequirementsManager.MainWindowInit();
+
             fileManager = new FileManager(ModelListBox, SelectedModelNotifier, ConfigsListBox, SelectedConfigNotifier);
 
-            // Needed to import annotations into MakeSense
             if (!File.Exists("bin\\labels\\labels.txt")) { File.WriteAllText("bin\\labels\\labels.txt", "Enemy"); }
 
             arManager.HoldDownLoad();
 
-            LoadConfig();
-            LoadAntiRecoilConfig();
+            FileManager.LoadConfig(uiManager: uiManager);
+            FileManager.LoadAntiRecoilConfig(uiManager: uiManager);
 
             SaveDictionary.LoadJSON(Dictionary.minimizeState, "bin\\minimize.cfg");
             SaveDictionary.LoadJSON(Dictionary.bindingSettings, "bin\\binding.cfg");
             SaveDictionary.LoadJSON(Dictionary.colorState, "bin\\colors.cfg");
             SaveDictionary.LoadJSON(Dictionary.filelocationState, "bin\\filelocations.cfg");
+
+            Dictionary<string, dynamic> tempToggleState = new() { { "Debug Mode", false } };
+            SaveDictionary.LoadJSON(tempToggleState, "bin\\toggleState.cfg", false);
+
+            if (tempToggleState["Debug Mode"])
+            {
+                Dictionary.toggleState["Debug Mode"] = true;
+                FileManager.LogInfo("Debug mode was found ON during last launch, automatically enabling...");
+
+                //try
+                //{
+                //    //FileManager.LogInfo($"Toggle state keys: {Dictionary.toggleState.Keys}, Toggle state values: {Dictionary.toggleState.Values}\n"
+                //     //   + $"Slider setting keys: {Dictionary.sliderSettings.Keys}, Slider setting values: {Dictionary.sliderSettings.Values}");
+                //}
+                //catch (Exception ex)
+                //{
+                //    FileManager.LogError("Error while logging debug info: " + ex, true);
+                //}
+            }
 
             bindingManager = new InputBindingManager();
             bindingManager.SetupDefault("Aim Keybind", Dictionary.bindingSettings["Aim Keybind"]);
@@ -102,14 +110,19 @@ namespace Aimmy2
             SaveDictionary.LoadJSON(Dictionary.dropdownState, "bin\\dropdown.cfg");
             LoadDropdownStates();
 
+            uiManager.DDI_TensorRT.Selected += OnExecutionProviderSelected;
+            uiManager.DDI_CUDA.Selected += OnExecutionProviderSelected;
+            //uiManager.DDI_DirectML.Selected += OnExecutionProviderSelected;
+            uiManager.DDI_CPU.Selected += OnExecutionProviderSelected;
+
             LoadMenuMinimizers();
             VisibilityXY();
-            PropertyChanger.ReceiveNewConfig = LoadConfig;
 
             ActualFOV = Dictionary.sliderSettings["FOV Size"];
+            PropertyChanger.ReceiveNewConfig = (configPath, load) => FileManager.LoadConfig(uiManager, configPath, true);
+
             PropertyChanger.PostNewFOVSize(Dictionary.sliderSettings["FOV Size"]);
             PropertyChanger.PostColor((Color)ColorConverter.ConvertFromString(Dictionary.colorState["FOV Color"]));
-
             PropertyChanger.PostDPColor((Color)ColorConverter.ConvertFromString(Dictionary.colorState["Detected Player Color"]));
             PropertyChanger.PostDPFontSize((int)Dictionary.sliderSettings["AI Confidence Font Size"]);
             PropertyChanger.PostDPWCornerRadius((int)Dictionary.sliderSettings["Corner Radius"]);
@@ -125,8 +138,20 @@ namespace Aimmy2
         }
 
         private async void LoadStoreMenuAsync() => await LoadStoreMenu();
-        private void Window_Loaded(object sender, RoutedEventArgs e) => AboutSpecs.Content = $"{GetProcessorName()} • {GetVideoControllerName()} • {GetFormattedMemorySize()}GB RAM";
 
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                Topmost = Dictionary.toggleState["UI TopMost"];
+
+                AboutSpecs.Content = $"{GetProcessorName()} • {GetVideoControllerName()} • {GetFormattedMemorySize()}GB RAM";
+            }
+            catch (Exception ex)
+            {
+                FileManager.LogError("Error loading window" + ex, true);
+            }
+        }
         private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e) => DragMove();
 
         private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = WindowState.Minimized;
@@ -153,6 +178,7 @@ namespace Aimmy2
             SaveDictionary.WriteJSON(Dictionary.dropdownState, "bin\\dropdown.cfg");
             SaveDictionary.WriteJSON(Dictionary.colorState, "bin\\colors.cfg");
             SaveDictionary.WriteJSON(Dictionary.filelocationState, "bin\\filelocations.cfg");
+            SaveDictionary.WriteJSON(Dictionary.toggleState, "bin\\toggleState.cfg");
             SaveDictionary.WriteJSON(Dictionary.AntiRecoilSettings, "bin\\anti_recoil_configs\\Default.cfg");
 
             FileManager.AIManager?.Dispose();
@@ -207,7 +233,7 @@ namespace Aimmy2
             UpdateVisibilityBasedOnSearchText((TextBox)sender, ConfigStoreScroller);
         }
 
-        private void UpdateVisibilityBasedOnSearchText(TextBox textBox, Panel panel)
+        private static void UpdateVisibilityBasedOnSearchText(TextBox textBox, Panel panel)
         {
             string searchText = textBox.Text.ToLower();
 
@@ -224,7 +250,7 @@ namespace Aimmy2
             if (Dictionary.toggleState["Mouse Background Effect"])
             {
                 var mousePosition = WinAPICaller.GetCursorPosition();
-                var translatedMousePos = PointFromScreen(new Point(mousePosition.X, mousePosition.Y));
+                var translatedMousePos = PointFromScreen(new System.Windows.Point(mousePosition.X, mousePosition.Y));
 
                 double targetAngle = Math.Atan2(translatedMousePos.Y - (MainBorder.ActualHeight * 0.5), translatedMousePos.X - (MainBorder.ActualWidth * 0.5)) * (180 / Math.PI);
 
@@ -268,18 +294,26 @@ namespace Aimmy2
                 "Razer Synapse (Require Razer Peripheral)" => 3,
                 _ => 0 // Default case if none of the above matches
             };
-            //if (Dictionary.dropdownState.TryGetValue("Monitor Selection", out var monitorSelection) && monitorSelection != null)
-            //{
-            //    var monitorIndex = Array.FindIndex(System.Windows.Forms.Screen.AllScreens,
-            //                                       screen => monitorSelection.Contains($"{screen.Bounds.Width}x{screen.Bounds.Height}"));
+            uiManager.D_ExecutionProvider!.DropdownBox.SelectedIndex = Dictionary.dropdownState["Execution Provider Type"] switch
+            {
+                //"DirectML" => 0,
+                "CUDA" => 0,
+                "TensorRT" => 1,
+                "CPU" => 2,
+                _ => 0 // Default to CUDA
+            };
+        }
+        static void OnExecutionProviderSelected(object sender, RoutedEventArgs e)
+        {
+            if (Dictionary.dropdownState["Execution Provider Type"] == "TensorRT")
+            {
+                if (!RequirementsManager.IsTensorRTInstalled())
+                {
+                    FileManager.LogWarning("TensorRT may not be installed, the program may not work with TensorRT", true);
+                }
+            }
 
-            //    uiManager.D_MonitorSelection!.DropdownBox.SelectedIndex = monitorIndex >= 0 ? monitorIndex : 0;
-            //}
-            //else
-            //{
-            //    uiManager.D_MonitorSelection!.DropdownBox.SelectedIndex = 0;
-            //}
-
+            FileManager.LogWarning("Load a new model to initialize new Execution Provider", true);
         }
 
         private AToggle AddToggle(StackPanel panel, string title)
@@ -303,7 +337,7 @@ namespace Aimmy2
             return toggle;
         }
 
-        private void UpdateToggleUI(AToggle toggle, bool isEnabled)
+        private static void UpdateToggleUI(AToggle toggle, bool isEnabled)
         {
             Application.Current.Dispatcher.Invoke(() =>
             {
@@ -350,9 +384,11 @@ namespace Aimmy2
                 case "EMA Smoothening":
                     MouseManager.IsEMASmoothingEnabled = Dictionary.toggleState[title];
                     break;
+
                 case "X Axis Percentage Adjustment":
                     VisibilityXY();
                     break;
+
                 case "Y Axis Percentage Adjustment":
                     VisibilityXY();
                     break;
@@ -438,14 +474,14 @@ namespace Aimmy2
                     case "Gun 1 Key":
                         if (Dictionary.toggleState["Enable Gun Switching Keybind"])
                         {
-                            LoadAntiRecoilConfig(Dictionary.filelocationState["Gun 1 Config"], true);
+                            FileManager.LoadAntiRecoilConfig(uiManager, Dictionary.filelocationState["Gun 1 Config"], true);
                         }
                         break;
 
                     case "Gun 2 Key":
                         if (Dictionary.toggleState["Enable Gun Switching Keybind"])
                         {
-                            LoadAntiRecoilConfig(Dictionary.filelocationState["Gun 2 Config"], true);
+                            FileManager.LoadAntiRecoilConfig(uiManager, Dictionary.filelocationState["Gun 2 Config"], true);
                         }
                         break;
                 }
@@ -475,7 +511,7 @@ namespace Aimmy2
             };
         }
 
-        private AColorChanger AddColorChanger(StackPanel panel, string title)
+        private static AColorChanger AddColorChanger(StackPanel panel, string title)
         {
             var colorChanger = new AColorChanger(title);
             colorChanger.ColorChangingBorder.Background = (Brush)new BrushConverter().ConvertFromString(Dictionary.colorState[title]);
@@ -483,7 +519,7 @@ namespace Aimmy2
             return colorChanger;
         }
 
-        private ASlider AddSlider(StackPanel panel, string title, string label, double frequency, double buttonsteps, double min, double max, bool For_Anti_Recoil = false)
+        private static ASlider AddSlider(StackPanel panel, string title, string label, double frequency, double buttonsteps, double min, double max, bool For_Anti_Recoil = false)
         {
             var slider = new ASlider(title, label, buttonsteps)
             {
@@ -501,14 +537,14 @@ namespace Aimmy2
             return slider;
         }
 
-        private ADropdown AddDropdown(StackPanel panel, string title)
+        private static ADropdown AddDropdown(StackPanel panel, string title)
         {
             var dropdown = new ADropdown(title, title);
             Application.Current.Dispatcher.Invoke(() => panel.Children.Add(dropdown));
             return dropdown;
         }
 
-        private AFileLocator AddFileLocator(StackPanel panel, string title, string filter = "All files (*.*)|*.*", string DLExtension = "")
+        private static AFileLocator AddFileLocator(StackPanel panel, string title, string filter = "All files (*.*)|*.*", string DLExtension = "")
         {
             var afilelocator = new AFileLocator(title, title, filter, DLExtension);
             Application.Current.Dispatcher.Invoke(() => panel.Children.Add(afilelocator));
@@ -533,23 +569,23 @@ namespace Aimmy2
             return dropdownitem;
         }
 
-        private ATitle AddTitle(StackPanel panel, string title, bool CanMinimize = false)
+        private static ATitle AddTitle(StackPanel panel, string title, bool CanMinimize = false)
         {
             var atitle = new ATitle(title, CanMinimize);
             Application.Current.Dispatcher.Invoke(() => panel.Children.Add(atitle));
             return atitle;
         }
 
-        private APButton AddButton(StackPanel panel, string title)
+        private static APButton AddButton(StackPanel panel, string title)
         {
             var button = new APButton(title);
             Application.Current.Dispatcher.Invoke(() => panel.Children.Add(button));
             return button;
         }
 
-        private void AddCredit(StackPanel panel, string name, string role) => Application.Current.Dispatcher.Invoke(() => panel.Children.Add(new ACredit(name, role)));
+        private static void AddCredit(StackPanel panel, string name, string role) => Application.Current.Dispatcher.Invoke(() => panel.Children.Add(new ACredit(name, role)));
 
-        private void AddSeparator(StackPanel panel)
+        private static void AddSeparator(StackPanel panel)
         {
             Application.Current.Dispatcher.Invoke(() =>
             {
@@ -561,7 +597,6 @@ namespace Aimmy2
         #endregion Menu Logic
 
         #region Menu Loading
-
         private void LoadAimMenu()
         {
             #region Aim Assist
@@ -645,6 +680,13 @@ namespace Aimmy2
             uiManager.S_YOffsetPercent = AddSlider(AimConfig, "Y Offset (%)", "Percent", 1, 1, 0, 100);
 
 
+            uiManager.S_AIMinimumConfidence = AddSlider(AimConfig, "AI Minimum Confidence", "% Confidence", 1, 1, 1, 100);
+            uiManager.S_AIMinimumConfidence.Slider.PreviewMouseLeftButtonUp += (sender, e) =>
+            {
+                if (uiManager.S_AIMinimumConfidence.Slider.Value >= 95) new NoticeBar("The minimum confidence you have set for Aimmy to be too high and may be unable to detect players.", 10000).Show();
+                else if (uiManager.S_AIMinimumConfidence.Slider.Value <= 35) new NoticeBar("The minimum confidence you have set for Aimmy may be too low can cause false positives.", 10000).Show();
+            };
+
             uiManager.S_EMASmoothing = AddSlider(AimConfig, "EMA Smoothening", "Amount", 0.01, 0.01, 0.01, 1);
 
             AddSeparator(AimConfig);
@@ -669,6 +711,7 @@ namespace Aimmy2
             uiManager.S_HoldTime = AddSlider(AntiRecoil, "Hold Time", "Milliseconds", 1, 1, 1, 1000, true);
             uiManager.B_RecordFireRate = AddButton(AntiRecoil, "Record Fire Rate");
             uiManager.B_RecordFireRate.Reader.Click += (s, e) => new SetAntiRecoil(this).Show();
+
             uiManager.S_FireRate = AddSlider(AntiRecoil, "Fire Rate", "Milliseconds", 1, 1, 1, 5000, true);
             uiManager.S_YAntiRecoilAdjustment = AddSlider(AntiRecoil, "Y Recoil (Up/Down)", "Move", 1, 1, -1000, 1000, true);
             uiManager.S_XAntiRecoilAdjustment = AddSlider(AntiRecoil, "X Recoil (Left/Right)", "Move", 1, 1, -1000, 1000, true);
@@ -684,13 +727,15 @@ namespace Aimmy2
             uiManager.B_SaveRecoilConfig = AddButton(ARConfig, "Save Anti Recoil Config");
             uiManager.B_SaveRecoilConfig.Reader.Click += (s, e) =>
             {
-                SaveFileDialog saveFileDialog = new SaveFileDialog();
-                saveFileDialog.InitialDirectory = $"{Directory.GetCurrentDirectory}\\bin\\anti_recoil_configs";
-                saveFileDialog.Filter = "Aimmy Style Recoil Config (*.cfg)|*.cfg";
+                SaveFileDialog saveFileDialog = new SaveFileDialog
+                {
+                    InitialDirectory = $"{Directory.GetCurrentDirectory}\\bin\\anti_recoil_configs",
+                    Filter = "Aimmy Style Recoil Config (*.cfg)|*.cfg"
+                };
                 if (saveFileDialog.ShowDialog() == true)
                 {
                     SaveDictionary.WriteJSON(Dictionary.AntiRecoilSettings, saveFileDialog.FileName);
-                    new NoticeBar($"[Anti Recoil] Config has been saved to \"{saveFileDialog.FileName}\"", 2000).Show();
+                    FileManager.LogInfo($"[Anti Recoil] Config has been saved to \"{saveFileDialog.FileName}\"", true);
                 }
             };
             uiManager.C_Gun1Key = AddKeyChanger(ARConfig, "Gun 1 Key", "D1");
@@ -699,9 +744,9 @@ namespace Aimmy2
             uiManager.AFL_Gun2Config = AddFileLocator(ARConfig, "Gun 2 Config", "Aimmy Style Recoil Config (*.cfg)|*.cfg", "\\bin\\anti_recoil_configs");
 
             uiManager.B_LoadGun1Config = AddButton(ARConfig, "Load Gun 1 Config");
-            uiManager.B_LoadGun1Config.Reader.Click += (s, e) => LoadAntiRecoilConfig(Dictionary.filelocationState["Gun 1 Config"], true);
+            uiManager.B_LoadGun1Config.Reader.Click += (s, e) => FileManager.LoadAntiRecoilConfig(uiManager, Dictionary.filelocationState["Gun 1 Config"], true);
             uiManager.B_LoadGun2Config = AddButton(ARConfig, "Load Gun 2 Config");
-            uiManager.B_LoadGun2Config.Reader.Click += (s, e) => LoadAntiRecoilConfig(Dictionary.filelocationState["Gun 2 Config"], true);
+            uiManager.B_LoadGun2Config.Reader.Click += (s, e) => FileManager.LoadAntiRecoilConfig(uiManager, Dictionary.filelocationState["Gun 2 Config"], true);
             AddSeparator(ARConfig);
 
             #endregion Anti Recoil Config
@@ -758,6 +803,7 @@ namespace Aimmy2
             uiManager.T_ShowDetectedPlayer = AddToggle(ESPConfig, "Show Detected Player");
             uiManager.T_ShowAIConfidence = AddToggle(ESPConfig, "Show AI Confidence");
             uiManager.T_ShowTracers = AddToggle(ESPConfig, "Show Tracers");
+            uiManager.T_ShowFPS = AddToggle(ESPConfig, "Show FPS");
             uiManager.CC_DetectedPlayerColor = AddColorChanger(ESPConfig, "Detected Player Color");
             uiManager.CC_DetectedPlayerColor.ColorChangingBorder.Background = (Brush)new BrushConverter().ConvertFromString(Dictionary.colorState["Detected Player Color"]);
             uiManager.CC_DetectedPlayerColor.Reader.Click += (s, x) =>
@@ -791,12 +837,10 @@ namespace Aimmy2
         {
             uiManager.AT_SettingsMenu = AddTitle(SettingsConfig, "Settings Menu", true);
 
-            uiManager.T_CollectDataWhilePlaying = AddToggle(SettingsConfig, "Collect Data While Playing");
-            uiManager.T_AutoLabelData = AddToggle(SettingsConfig, "Auto Label Data");
             uiManager.D_MouseMovementMethod = AddDropdown(SettingsConfig, "Mouse Movement Method");
+            AddDropdownItem(uiManager.D_MouseMovementMethod, "Arduino");
             AddDropdownItem(uiManager.D_MouseMovementMethod, "Mouse Event");
             AddDropdownItem(uiManager.D_MouseMovementMethod, "SendInput");
-            AddDropdownItem(uiManager.D_MouseMovementMethod, "Arduino");
             uiManager.DDI_LGHUB = AddDropdownItem(uiManager.D_MouseMovementMethod, "LG HUB");
 
             uiManager.DDI_LGHUB.Selected += (sender, e) =>
@@ -816,64 +860,27 @@ namespace Aimmy2
                 }
             };
 
+            uiManager.D_ExecutionProvider = AddDropdown(SettingsConfig, "Execution Provider Type");
+            //uiManager.DDI_DirectML = AddDropdownItem(uiManager.D_ExecutionProvider, "DirectML");
+            uiManager.DDI_CUDA = AddDropdownItem(uiManager.D_ExecutionProvider, "CUDA");
+            uiManager.DDI_TensorRT = AddDropdownItem(uiManager.D_ExecutionProvider, "TensorRT");
+            uiManager.DDI_CPU = AddDropdownItem(uiManager.D_ExecutionProvider, "CPU");
+
+
+
             //uiManager.D_MonitorSelection = AddDropdown(SettingsConfig, "Monitor Selection");
 
-            //var monitors = System.Windows.Forms.Screen.AllScreens;
-            //try
-            //{
-            //    foreach (var monitor in monitors)
-            //    {
-            //        string monitorName = $"Monitor {Array.IndexOf(System.Windows.Forms.Screen.AllScreens, monitor) + 1}: {monitor.Bounds.Width}x{monitor.Bounds.Height}";
+            uiManager.D_ScreenCaptureMethod = AddDropdown(SettingsConfig, "Screen Capture Method");
+            AddDropdownItem(uiManager.D_ScreenCaptureMethod, "DirectX");
 
-            //        AddDropdownItem(uiManager.D_MonitorSelection, monitorName);
-            //    }
-            //}
-            //catch (Exception e)
-            //{
-            //    FileManager.LogError("Error grabbing monitor list: " + e);
-            //}
+            AddDropdownItem(uiManager.D_ScreenCaptureMethod, "GDI");
 
-            //if (uiManager.D_MonitorSelection.DropdownBox.Items.Count > 0)
-            //{
-            //    uiManager.D_MonitorSelection.DropdownBox.SelectedIndex = 0;
-            //}
-            //uiManager.D_MonitorSelection.DropdownBox.SelectionChanged += (sender, args) =>
-            //{
-            //    try
-            //    {
-            //        var selectedMonitorIndex = uiManager.D_MonitorSelection.DropdownBox.SelectedIndex;
+            uiManager.T_CollectDataWhilePlaying = AddToggle(SettingsConfig, "Collect Data While Playing");
+            uiManager.T_AutoLabelData = AddToggle(SettingsConfig, "Auto Label Data");
 
-            //        if (selectedMonitorIndex >= 0 && selectedMonitorIndex < monitors.Length)
-            //        {
-            //            // Update the monitor configuration in AIManager
-            //            FileManager.AIManager?.UpdateMonitorConfiguration();
-            //        }
-            //        else
-            //        {
-            //            FileManager.LogError("Selected monitor index is out of range.");
-            //        }
-            //    }
-            //    catch (Exception ex)
-            //    {
-            //        FileManager.LogError($"Error handling monitor selection change: {ex}");
-            //    }
-            //};
-
-            //uiManager.D_ScreenCaptureMethod = AddDropdown(SettingsConfig, "Screen Capture Method");
-            //AddDropdownItem(uiManager.D_ScreenCaptureMethod, "DirectX");
-
-            //AddDropdownItem(uiManager.D_ScreenCaptureMethod, "GDI+");
-
-            uiManager.S_AIMinimumConfidence = AddSlider(SettingsConfig, "AI Minimum Confidence", "% Confidence", 1, 1, 1, 100);
-            uiManager.S_AIMinimumConfidence.Slider.PreviewMouseLeftButtonUp += (sender, e) =>
-            {
-                if (uiManager.S_AIMinimumConfidence.Slider.Value >= 95) new NoticeBar("The minimum confidence you have set for Aimmy to be too high and may be unable to detect players.", 10000).Show();
-                else if (uiManager.S_AIMinimumConfidence.Slider.Value <= 35) new NoticeBar("The minimum confidence you have set for Aimmy may be too low can cause false positives.", 10000).Show();
-            };
             uiManager.T_MouseBackgroundEffect = AddToggle(SettingsConfig, "Mouse Background Effect");
             uiManager.T_UITopMost = AddToggle(SettingsConfig, "UI TopMost");
-            //uiManager.T_DebugMode = AddToggle(SettingsConfig, "Debug Mode");
-            uiManager.T_ShowFPS = AddToggle(SettingsConfig, "Show FPS");
+            uiManager.T_DebugMode = AddToggle(SettingsConfig, "Debug Mode");
             uiManager.B_SaveConfig = AddButton(SettingsConfig, "Save Config");
             uiManager.B_SaveConfig.Reader.Click += (s, e) => new ConfigSaver().ShowDialog();
 
@@ -893,15 +900,14 @@ namespace Aimmy2
         {
             AddTitle(CreditsPanel, "Developers");
             AddCredit(CreditsPanel, "Taylor", "This Entire Repo");
-            AddCredit(CreditsPanel, "Seconb", "Arduino Movement");
             AddCredit(CreditsPanel, "Babyhamsta", "AI Logic");
             AddCredit(CreditsPanel, "MarsQQ", "Design");
             AddSeparator(CreditsPanel);
 
             AddTitle(CreditsPanel, "Contributors");
-            AddCredit(CreditsPanel, "whoswhip", "Bug fixes, EMA & Ported Arduino to Cuda Aimmy");
             AddCredit(CreditsPanel, "Shall0e", "Prediction Method");
             AddCredit(CreditsPanel, "wisethef0x", "EMA Prediction Method");
+            AddCredit(CreditsPanel, "whoswhip", "Bug fixes & EMA");
             AddCredit(CreditsPanel, "HakaCat", "Idea for Auto Labelling Data");
             AddCredit(CreditsPanel, "Themida", "LGHub check");
             AddCredit(CreditsPanel, "Ninja", "MarsQQ's emotional support");
@@ -926,8 +932,7 @@ namespace Aimmy2
             }
             catch (Exception e)
             {
-                FileManager.LogError("Error loading store menu: " + e);
-                new NoticeBar(e.Message, 10000).Show();
+                FileManager.LogError("Error loading store menu: " + e, true, 10000);
                 return;
             }
 
@@ -1062,84 +1067,6 @@ namespace Aimmy2
 
         #endregion Menu Minizations
 
-        #region Config Loader
-
-        private void LoadConfig(string path = "bin\\configs\\Default.cfg", bool loading_from_configlist = false)
-        {
-            SaveDictionary.LoadJSON(Dictionary.sliderSettings, path);
-            try
-            {
-                if (loading_from_configlist)
-                {
-                    if (Dictionary.sliderSettings["Suggested Model"] != "N/A" || Dictionary.sliderSettings["Suggested Model"] != "")
-                    {
-                        MessageBox.Show(
-                            "The creator of this model suggests you use this model:\n" +
-                            Dictionary.sliderSettings["Suggested Model"], "Suggested Model - Aimmy"
-                        );
-                    }
-
-                    uiManager.S_FireRate!.Slider.Value = MainWindow.GetValueOrDefault(Dictionary.sliderSettings, "Fire Rate", 1);
-
-                    uiManager.S_FOVSize!.Slider.Value = MainWindow.GetValueOrDefault(Dictionary.sliderSettings, "FOV Size", 640);
-
-                    uiManager.S_MouseSensitivity!.Slider.Value = MainWindow.GetValueOrDefault(Dictionary.sliderSettings, "Mouse Sensitivity (+/-)", 0.8);
-                    uiManager.S_MouseJitter!.Slider.Value = MainWindow.GetValueOrDefault(Dictionary.sliderSettings, "Mouse Jitter", 0);
-
-                    uiManager.S_YOffset!.Slider.Value = MainWindow.GetValueOrDefault(Dictionary.sliderSettings, "Y Offset (Up/Down)", 0);
-                    uiManager.S_XOffset!.Slider.Value = MainWindow.GetValueOrDefault(Dictionary.sliderSettings, "X Offset (Left/Right)", 0);
-
-                    uiManager.S_YOffsetPercent!.Slider.Value = MainWindow.GetValueOrDefault(Dictionary.sliderSettings, "Y Offset (%)", 0);
-                    uiManager.S_XOffsetPercent!.Slider.Value = MainWindow.GetValueOrDefault(Dictionary.sliderSettings, "X Offset (%)", 0);
-
-                    uiManager.S_AutoTriggerDelay!.Slider.Value = MainWindow.GetValueOrDefault(Dictionary.sliderSettings, "Auto Trigger Delay", .25);
-                    uiManager.S_AIMinimumConfidence!.Slider.Value = MainWindow.GetValueOrDefault(Dictionary.sliderSettings, "AI Minimum Confidence", 50);
-                }
-            }
-
-            catch (Exception e)
-            {
-                FileManager.LogError("Error loading config " + e);
-                MessageBox.Show($"Error loading config, possibly outdated\n{e}");
-            }
-        }
-
-        #endregion Config Loader
-
-        #region Anti Recoil Config Loader
-
-        private void LoadAntiRecoilConfig(string path = "bin\\anti_recoil_configs\\Default.cfg", bool loading_outside_startup = false)
-        {
-            if (File.Exists(path))
-            {
-                SaveDictionary.LoadJSON(Dictionary.AntiRecoilSettings, path);
-                try
-                {
-                    if (loading_outside_startup)
-                    {
-                        uiManager.S_HoldTime!.Slider.Value = Dictionary.AntiRecoilSettings["Hold Time"];
-
-                        uiManager.S_FireRate!.Slider.Value = Dictionary.AntiRecoilSettings["Fire Rate"];
-
-                        uiManager.S_YAntiRecoilAdjustment!.Slider.Value = Dictionary.AntiRecoilSettings["Y Recoil (Up/Down)"];
-                        uiManager.S_XAntiRecoilAdjustment!.Slider.Value = Dictionary.AntiRecoilSettings["X Recoil (Left/Right)"];
-                        new NoticeBar($"[Anti Recoil] Loaded \"{path}\"", 2000).Show();
-                    }
-                }
-                catch (Exception e)
-                {
-                    FileManager.LogError("Error loading anti-recoil config: " + e);
-                    throw new Exception($"Error loading config, possibly outdated\n{e}");
-                }
-            }
-            else
-            {
-                new NoticeBar("[Anti Recoil] Config not found.", 5000).Show();
-            }
-        }
-
-        #endregion Anti Recoil Config Loader
-
         #region Open Folder
 
         private void OpenFolderB_Click(object sender, RoutedEventArgs e)
@@ -1168,19 +1095,7 @@ namespace Aimmy2
             uiManager.D_MouseMovementMethod!.DropdownBox.SelectedIndex = 0;
         }
 
-        private static T GetValueOrDefault<T>(Dictionary<string, T> dictionary, string key, T defaultValue)
-        {
-            if (dictionary.TryGetValue(key, out T? value))
-            {
-                //Debug.WriteLine($"Value: {value}, Dictionary: {key}");
-                return value;
-            }
-            else
-            {
-                //Debug.WriteLine($"Default: {defaultValue}, Dictionary: {key}");
-                return defaultValue;
-            }
-        }
+
 
         #endregion Menu Functions
 
@@ -1222,7 +1137,7 @@ namespace Aimmy2
         private async void CheckForUpdates_Click(object sender, RoutedEventArgs e)
         {
             UpdateManager updateManager = new UpdateManager();
-            await updateManager.CheckForUpdate("v2.1.7");
+            await updateManager.CheckForUpdate("v2.2.0");
             updateManager.Dispose();
         }
 

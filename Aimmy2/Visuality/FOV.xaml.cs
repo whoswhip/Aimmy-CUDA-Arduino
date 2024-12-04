@@ -1,5 +1,5 @@
 ﻿using Aimmy2.Class;
-using Class;
+using Aimmy2.WinformsReplacement;
 using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Interop;

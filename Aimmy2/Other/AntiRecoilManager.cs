@@ -1,8 +1,8 @@
 ﻿using Aimmy2.Class;
-using InputLogic;
+using Aimmy2.InputLogic;
 using System.Windows.Threading;
 
-namespace Other
+namespace Aimmy2.Other
 {
     public class AntiRecoilManager
     {
@@ -21,7 +21,8 @@ namespace Other
         private void HoldDownTimerTicker(object sender, EventArgs e)
         {
             IndependentMousePress += 1;
-            if (IndependentMousePress >= Dictionary.AntiRecoilSettings["Hold Time"]){
+            if (IndependentMousePress >= Dictionary.AntiRecoilSettings["Hold Time"])
+            {
                 MouseManager.DoAntiRecoil();
             }
         }

@@ -1,15 +1,12 @@
-using System;
 using System.Diagnostics;
 using System.IO;
-using System.Reflection;
 using System.Net.Sockets;
 using System.Text;
-using System.Runtime.Intrinsics.Arm;
 using System.Security.Cryptography;
 using Visuality;
 
 
-namespace MouseMovementLibraries.ArduinoSupport
+namespace Aimmy2.MouseMovementLibraries.ArduinoSupport
 {
     public static class StartArduino
     {

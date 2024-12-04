@@ -1,7 +1,7 @@
 ﻿using Gma.System.MouseKeyHook;
 using System.Windows.Forms;
 
-namespace InputLogic
+namespace Aimmy2.InputLogic
 {
     internal class InputBindingManager
     {

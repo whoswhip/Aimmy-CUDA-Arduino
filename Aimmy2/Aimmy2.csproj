@@ -1,16 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup Label="Globals" Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <Microsoft_AI_DirectML_SkipDebugLayerCopy>True</Microsoft_AI_DirectML_SkipDebugLayerCopy>
-    <Microsoft_AI_DirectML_SkipLibraryCopy>False</Microsoft_AI_DirectML_SkipLibraryCopy>
-  </PropertyGroup>
-
   <PropertyGroup Label="Globals" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <Microsoft_AI_DirectML_SkipDebugLayerCopy>True</Microsoft_AI_DirectML_SkipDebugLayerCopy>
-    <Microsoft_AI_DirectML_SkipLibraryCopy>False</Microsoft_AI_DirectML_SkipLibraryCopy>
-  </PropertyGroup>
-
-  <PropertyGroup Label="Globals" Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <Microsoft_AI_DirectML_SkipDebugLayerCopy>True</Microsoft_AI_DirectML_SkipDebugLayerCopy>
     <Microsoft_AI_DirectML_SkipLibraryCopy>False</Microsoft_AI_DirectML_SkipLibraryCopy>
   </PropertyGroup>
@@ -27,26 +17,16 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
     <UseWindowsForms>false</UseWindowsForms>
-    <Platforms>AnyCPU;x64</Platforms>	  <Product></Product>
+    <Platforms>x64</Platforms>	  <Product></Product>
 	  <Title></Title>
-	  <AssemblyName>ojsdgnojgbnojsdefbogjbsdf</AssemblyName>
+	  <AssemblyName>Discord</AssemblyName>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <SignAssembly>False</SignAssembly>
     <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
   
   </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <Optimize>False</Optimize>
-    <DebugType>none</DebugType>
-  </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Optimize>False</Optimize>
-    <DebugType>none</DebugType>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <DebugType>none</DebugType>
   </PropertyGroup>
 
@@ -56,7 +36,12 @@
 
   <ItemGroup>
     <None Remove="mousemovement.exe" />
-    <None Remove="Other\Arduino Spoofer.exe" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="mousemovement.exe">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
@@ -65,7 +50,7 @@
 
   <ItemGroup>
     <PackageReference Include="Accord.Statistics" Version="3.8.0" />
-    <PackageReference Include="AntWpf" Version="1.0.3" />
+    <PackageReference Include="AntWpf" Version="1.0.5" />
     <PackageReference Include="Costura.Fody" Version="5.8.0-alpha0098">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -75,7 +60,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="MaterialDesignThemes" Version="4.9.0" />
-    <PackageReference Include="Microsoft.ML.OnnxRuntime.Gpu" Version="1.18.1" />
+    <PackageReference Include="Microsoft.ML.OnnxRuntime.Gpu" Version="1.20.0" />
     <PackageReference Include="MouseKeyHook" Version="5.7.1" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="Supercluster.KDTree" Version="1.0.4" />
@@ -93,9 +78,6 @@
 		<Resource Include="Graphics\Fonts\Font Awesome 6 Free-Regular-400.otf" />
 		<Resource Include="Graphics\Fonts\Font Awesome 6 Free-Solid-900.otf" />
 		<Resource Include="Graphics\Fonts\Font Awesome 6 Brands-Regular-400.otf" />
-		<Resource Include="mousemovement.exe">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Resource>
 	</ItemGroup>
 
 	<ItemGroup>

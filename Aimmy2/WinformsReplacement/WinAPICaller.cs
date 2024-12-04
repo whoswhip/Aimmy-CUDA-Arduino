@@ -3,9 +3,9 @@ using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Interop;
-using static WinformsReplacement.NativeMethods;
+using static Aimmy2.WinformsReplacement.NativeMethods;
 
-namespace Class
+namespace Aimmy2.WinformsReplacement
 {
     public partial class WinAPICaller
     {
@@ -14,10 +14,10 @@ namespace Class
         // Below is written by ChatGPT 3.5
         // Nori
 
-        private static Graphics GraphicsThing = Graphics.FromHwnd(IntPtr.Zero);
+        private static Graphics GraphicsThing = Graphics.FromHwnd(nint.Zero);
 
-        public static float scalingFactorX = GraphicsThing.DpiX / (float)96;
-        public static float scalingFactorY = GraphicsThing.DpiY / (float)96;
+        public static float scalingFactorX = GraphicsThing.DpiX / 96;
+        public static float scalingFactorY = GraphicsThing.DpiY / 96;
 
         public static int ScreenWidth = Screen.PrimaryScreen!.Bounds.Width;
         public static int ScreenHeight = Screen.PrimaryScreen!.Bounds.Height;
@@ -49,12 +49,12 @@ namespace Class
         #region Functions
 
         // https://stackoverflow.com/questions/254197/how-can-i-get-the-active-screen-dimensions
-        public void GetScreenWidth(Window MW)
+        public static void GetScreenWidth(Window MW)
         {
             var hwnd = new WindowInteropHelper(MW).EnsureHandle();
             var monitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
 
-            if (monitor != IntPtr.Zero)
+            if (monitor != nint.Zero)
             {
                 var monitorInfo = new NativeMonitorInfo();
                 GetMonitorInfo(monitor, monitorInfo);

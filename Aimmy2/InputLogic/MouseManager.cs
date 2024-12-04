@@ -1,14 +1,13 @@
 using Aimmy2.Class;
 using Aimmy2.MouseMovementLibraries.GHubSupport;
-using Class;
-using MouseMovementLibraries.ddxoftSupport;
-using MouseMovementLibraries.RazerSupport;
-using MouseMovementLibraries.ArduinoSupport;
-using MouseMovementLibraries.SendInputSupport;
+using Aimmy2.MouseMovementLibraries.RazerSupport;
+using Aimmy2.MouseMovementLibraries.SendInputSupport;
+using Aimmy2.MouseMovementLibraries.ArduinoSupport;
+using Aimmy2.WinformsReplacement;
 using System.Drawing;
 using System.Runtime.InteropServices;
 
-namespace InputLogic
+namespace Aimmy2.InputLogic
 {
     internal class MouseManager
     {
@@ -37,9 +36,11 @@ namespace InputLogic
             double u = 1 - t;
             double tt = t * t;
             double uu = u * u;
+            double uuu = uu * u;
+            double ttt = tt * t;
 
-            double x = uu * u * start.X + 3 * uu * t * control1.X + 3 * u * tt * control2.X + tt * t * end.X;
-            double y = uu * u * start.Y + 3 * uu * t * control1.Y + 3 * u * tt * control2.Y + tt * t * end.Y;
+            double x = uuu * start.X + 3 * uu * t * control1.X + 3 * u * tt * control2.X + ttt * end.X;
+            double y = uuu * start.Y + 3 * uu * t * control1.Y + 3 * u * tt * control2.Y + ttt * end.Y;
 
             if (IsEMASmoothingEnabled)
             {
@@ -50,7 +51,7 @@ namespace InputLogic
             return new Point((int)x, (int)y);
         }
 
-        private static double EmaSmoothing(double previousValue, double currentValue, double smoothingFactor) => (currentValue * smoothingFactor) + (previousValue * (1 - smoothingFactor));
+        private static double EmaSmoothing(double previousValue, double currentValue, double smoothingFactor) => currentValue * smoothingFactor + previousValue * (1 - smoothingFactor);
 
         public static async Task DoTriggerClick()
         {
@@ -64,41 +65,42 @@ namespace InputLogic
             }
 
             string mouseMovementMethod = Dictionary.dropdownState["Mouse Movement Method"];
-            Action mouseDownAction;
-            Action mouseUpAction;
+            Action mouseDownAction, mouseUpAction;
 
-            switch (mouseMovementMethod)
-            {
-                case "SendInput":
-                    mouseDownAction = () => SendInputMouse.SendMouseCommand(MOUSEEVENTF_LEFTDOWN);
-                    mouseUpAction = () => SendInputMouse.SendMouseCommand(MOUSEEVENTF_LEFTUP);
-                    break;
-
-                case "LG HUB":
-                    mouseDownAction = () => LGMouse.Move(1, 0, 0, 0);
-                    mouseUpAction = () => LGMouse.Move(0, 0, 0, 0);
-                    break;
-
-                case "Razer Synapse (Require Razer Peripheral)":
-                    mouseDownAction = () => RZMouse.mouse_click(1);
-                    mouseUpAction = () => RZMouse.mouse_click(0);
-                    break;
-                case "Arduino":
-                    mouseDownAction = () => arduinoController.SendMouseClick(1);
-                    mouseUpAction = () => arduinoController.SendMouseClick(0);
-                    break;
-
-                default:
-                    mouseDownAction = () => mouse_event(MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0);
-                    mouseUpAction = () => mouse_event(MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
-                    break;
-            }
+            (mouseDownAction, mouseUpAction) = GetMouseActions(mouseMovementMethod);
 
             mouseDownAction.Invoke();
             await Task.Delay(clickDelayMilliseconds);
             mouseUpAction.Invoke();
 
             LastClickTime = DateTime.UtcNow;
+
+            static (Action, Action) GetMouseActions(string method)
+            {
+                return method switch
+                {
+                    "Arduino" => (
+                        () => arduinoController.SendMouseClick(1),
+                        () => arduinoController.SendMouseClick(0)
+                    ),
+                    "SendInput" => (
+                        () => SendInputMouse.SendMouseCommand(MOUSEEVENTF_LEFTDOWN),
+                        () => SendInputMouse.SendMouseCommand(MOUSEEVENTF_LEFTUP)
+                    ),
+                    "LG HUB" => (
+                        () => LGMouse.Move(1, 0, 0, 0),
+                        () => LGMouse.Move(0, 0, 0, 0)
+                    ),
+                    "Razer Synapse (Require Razer Peripheral)" => (
+                        () => RZMouse.mouse_click(1),
+                        () => RZMouse.mouse_click(0)
+                    ),
+                    _ => (
+                        () => arduinoController.SendMouseClick(1),
+                        () => arduinoController.SendMouseClick(0)
+                    )
+                };
+            }
         }
 
         public static void DoAntiRecoil()
@@ -115,6 +117,9 @@ namespace InputLogic
 
             switch (Dictionary.dropdownState["Mouse Movement Method"])
             {
+                case "Arduino":
+                    arduinoController.SendMouseCoordinates(xRecoil, yRecoil);
+                    break;
                 case "SendInput":
                     SendInputMouse.SendMouseCommand(MOUSEEVENTF_MOVE, xRecoil, yRecoil);
                     break;
@@ -126,12 +131,9 @@ namespace InputLogic
                 case "Razer Synapse (Require Razer Peripheral)":
                     RZMouse.mouse_move(xRecoil, yRecoil, true);
                     break;
-                case "Arduino":
-                    arduinoController.SendMouseCoordinates(xRecoil, yRecoil);
-                    break;
 
                 default:
-                    mouse_event(MOUSEEVENTF_MOVE, (uint)xRecoil, (uint)yRecoil, 0, 0);
+                    arduinoController.SendMouseCoordinates(xRecoil, yRecoil);
                     break;
             }
 
@@ -168,6 +170,10 @@ namespace InputLogic
 
             switch (Dictionary.dropdownState["Mouse Movement Method"])
             {
+                case "Arduino":
+                    arduinoController.SendMouseCoordinates(newPosition.X, newPosition.Y);
+                    break;
+
                 case "SendInput":
                     SendInputMouse.SendMouseCommand(MOUSEEVENTF_MOVE, newPosition.X, newPosition.Y);
                     break;
@@ -178,9 +184,6 @@ namespace InputLogic
 
                 case "Razer Synapse (Require Razer Peripheral)":
                     RZMouse.mouse_move(newPosition.X, newPosition.Y, true);
-                    break;
-                case "Arduino":
-                    arduinoController.SendMouseCoordinates(newPosition.X, newPosition.Y);
                     break;
 
                 default:

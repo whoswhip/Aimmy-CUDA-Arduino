@@ -2,12 +2,13 @@
 using System.Windows.Controls;
 using UILibrary;
 
-namespace Class
+namespace Aimmy2.Class
 {
     public class UI
     {
         // Aim Menu
         public ATitle? AT_Aim { get; set; }
+        public APButton? B_Testing { get; set; }
 
         public AToggle? T_AimAligner { get; set; }
 
@@ -16,8 +17,6 @@ namespace Class
         public AToggle? T_Predictions { get; set; }
         public AToggle? T_EMASmoothing { get; set; }
         public AKeyChanger? C_EmergencyKeybind { get; set; }
-        public AToggle? T_EnableModelSwitchKeybind { get; set; }
-        public AKeyChanger? C_ModelSwitchKeybind { get; set; }
 
         //Aim Config
         public ATitle? AT_AimConfig { get; set; }
@@ -42,9 +41,7 @@ namespace Class
 
         // Anti Recoil
         public ATitle? AT_AntiRecoil { get; set; }
-
         public AToggle? T_AntiRecoil { get; set; }
-
         public AKeyChanger? C_AntiRecoilKeybind { get; set; }
         public AKeyChanger? C_ToggleAntiRecoilKeybind { get; set; }
         public ASlider? S_HoldTime { get; set; }
@@ -55,9 +52,7 @@ namespace Class
 
         // Anti Recoil Config
         public ATitle? AT_AntiRecoilConfig { get; set; }
-
         public AToggle? T_EnableGunSwitchingKeybind { get; set; }
-
         public APButton? B_SaveRecoilConfig { get; set; }
         public AKeyChanger? C_Gun1Key { get; set; }
         public AFileLocator? AFL_Gun1Config { get; set; }
@@ -68,9 +63,7 @@ namespace Class
 
         // FOV
         public ATitle? AT_FOV { get; set; }
-
         public AToggle? T_FOV { get; set; }
-
         public AToggle? T_DynamicFOV { get; set; }
         public AKeyChanger? C_DynamicFOV { get; set; }
         public AColorChanger? CC_FOVColor { get; set; }
@@ -94,7 +87,12 @@ namespace Class
         public AToggle? T_CollectDataWhilePlaying { get; set; }
         public AToggle? T_AutoLabelData { get; set; }
         public ADropdown? D_MouseMovementMethod { get; set; }
+        public ADropdown? D_ScreenCaptureMethod { get; set; }
         public ADropdown? D_MonitorSelection { get; set; }
+        public ADropdown? D_ExecutionProvider { get; set; }
+        public ComboBoxItem? DDI_CUDA { get; set; }
+        public ComboBoxItem? DDI_TensorRT { get; set; }
+        public ComboBoxItem? DDI_CPU { get; set; }
         public ComboBoxItem? DDI_LGHUB { get; set; }
         public ComboBoxItem? DDI_RazerSynapse { get; set; }
         public ASlider? S_AIMinimumConfidence { get; set; }

@@ -2,7 +2,7 @@
 using System.Windows.Media.Animation;
 using System.Windows.Shapes;
 
-namespace AimmyWPF.Class
+namespace Aimmy2.Class
 {
     public static class Animator
     {

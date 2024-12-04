@@ -1,11 +1,10 @@
-﻿using Class;
-using System.Drawing;
+﻿using System.Drawing;
 
-namespace WinformsReplacement
+namespace Aimmy2.WinformsReplacement
 {
     public class GetScalingFactor
     {
-        private static Graphics graphics = Graphics.FromHwnd(IntPtr.Zero);
+        private static Graphics graphics = Graphics.FromHwnd(nint.Zero);
 
         // Get the scaling factor
         public static float scalingFactorX = graphics.DpiX / 96f;

@@ -1,11 +1,11 @@
-﻿using Other;
+﻿using Aimmy2.Other;
 using System.IO;
 using System.Net.Http;
 using System.Security.Principal;
 using System.Windows;
 using Visuality;
 
-namespace MouseMovementLibraries.ddxoftSupport
+namespace Aimmy2.MouseMovementLibraries.ddxoftSupport
 {
     internal class DdxoftMain
     {
@@ -29,10 +29,9 @@ namespace MouseMovementLibraries.ddxoftSupport
                     new NoticeBar($"{ddxoftpath} has downloaded successfully, please re-select ddxoft Virtual Input Driver to load the DLL.", 4000).Show();
                 }
             }
-            catch(Exception e)
+            catch (Exception e)
             {
-                FileManager.LogError("Failed to download ddxoft.dll: " + e);
-                new NoticeBar($"{ddxoftpath} has failed to install, please try a different Mouse Movement Method.", 4000).Show();
+                FileManager.LogError("Failed to download ddxoft.dll: " + e, true);
             }
         }
 
@@ -62,8 +61,7 @@ namespace MouseMovementLibraries.ddxoftSupport
             }
             catch (Exception ex)
             {
-                FileManager.LogError("Failed to load ddxoft: " + ex);
-                MessageBox.Show("Failed to load ddxoft virtual input driver.\n\n" + ex.ToString(), "Aimmy");
+                FileManager.LogError("Failed to load ddxoft: " + ex, true);
                 return false;
             }
         }

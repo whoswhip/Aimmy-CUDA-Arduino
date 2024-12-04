@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace MouseMovementLibraries.ddxoftSupport
+namespace Aimmy2.MouseMovementLibraries.ddxoftSupport
 {
     // Imported from: https://github.com/ddxoft/master/tree/master/Example/App_csharp
     // Nori
@@ -16,13 +16,13 @@ namespace MouseMovementLibraries.ddxoftSupport
     internal class ddxoftMouse
     {
         [DllImport("Kernel32")]
-        private static extern System.IntPtr LoadLibrary(string dllfile);
+        private static extern nint LoadLibrary(string dllfile);
 
         [DllImport("Kernel32")]
-        private static extern System.IntPtr GetProcAddress(System.IntPtr hModule, string lpProcName);
+        private static extern nint GetProcAddress(nint hModule, string lpProcName);
 
         [DllImport("kernel32.dll")]
-        public static extern bool FreeLibrary(IntPtr hModule);
+        public static extern bool FreeLibrary(nint hModule);
 
         public delegate int pDD_btn(int btn);
 
@@ -46,11 +46,11 @@ namespace MouseMovementLibraries.ddxoftSupport
         public pDD_str str;            //Input visible char
         public pDD_todc todc;      //VK to ddcode
 
-        private IntPtr m_hinst;
+        private nint m_hinst;
 
         ~ddxoftMouse()
         {
-            if (!m_hinst.Equals(IntPtr.Zero))
+            if (!m_hinst.Equals(nint.Zero))
             {
                 FreeLibrary(m_hinst);
             }
@@ -59,7 +59,7 @@ namespace MouseMovementLibraries.ddxoftSupport
         public int Load(string dllfile)
         {
             m_hinst = LoadLibrary(dllfile);
-            if (m_hinst.Equals(IntPtr.Zero))
+            if (m_hinst.Equals(nint.Zero))
             {
                 return -2;
             }
@@ -69,36 +69,36 @@ namespace MouseMovementLibraries.ddxoftSupport
             }
         }
 
-        private int GetDDfunAddress(IntPtr hinst)
+        private int GetDDfunAddress(nint hinst)
         {
-            IntPtr ptr;
+            nint ptr;
 
             ptr = GetProcAddress(hinst, "DD_btn");
-            if (ptr.Equals(IntPtr.Zero)) { return -1; }
+            if (ptr.Equals(nint.Zero)) { return -1; }
             btn = Marshal.GetDelegateForFunctionPointer<pDD_btn>(ptr);
 
             ptr = GetProcAddress(hinst, "DD_whl");
-            if (ptr.Equals(IntPtr.Zero)) { return -1; }
+            if (ptr.Equals(nint.Zero)) { return -1; }
             whl = Marshal.GetDelegateForFunctionPointer<pDD_whl>(ptr);
 
             ptr = GetProcAddress(hinst, "DD_mov");
-            if (ptr.Equals(IntPtr.Zero)) { return -1; }
+            if (ptr.Equals(nint.Zero)) { return -1; }
             mov = Marshal.GetDelegateForFunctionPointer<pDD_mov>(ptr);
 
             ptr = GetProcAddress(hinst, "DD_key");
-            if (ptr.Equals(IntPtr.Zero)) { return -1; }
+            if (ptr.Equals(nint.Zero)) { return -1; }
             key = Marshal.GetDelegateForFunctionPointer<pDD_key>(ptr);
 
             ptr = GetProcAddress(hinst, "DD_movR");
-            if (ptr.Equals(IntPtr.Zero)) { return -1; }
+            if (ptr.Equals(nint.Zero)) { return -1; }
             movR = Marshal.GetDelegateForFunctionPointer<pDD_movR>(ptr);
 
             ptr = GetProcAddress(hinst, "DD_str");
-            if (ptr.Equals(IntPtr.Zero)) { return -1; }
+            if (ptr.Equals(nint.Zero)) { return -1; }
             str = Marshal.GetDelegateForFunctionPointer<pDD_str>(ptr);
 
             ptr = GetProcAddress(hinst, "DD_todc");
-            if (ptr.Equals(IntPtr.Zero)) { return -1; }
+            if (ptr.Equals(nint.Zero)) { return -1; }
             todc = Marshal.GetDelegateForFunctionPointer<pDD_todc>(ptr);
 
             return 1;

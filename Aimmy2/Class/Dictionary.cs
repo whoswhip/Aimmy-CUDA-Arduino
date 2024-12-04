@@ -1,4 +1,5 @@
 using Visuality;
+using Vortice.DXGI;
 
 namespace Aimmy2.Class
 {
@@ -27,7 +28,7 @@ namespace Aimmy2.Class
             { "FOV Size", 640 },
             { "Dynamic FOV Size", 200 },
             { "Mouse Sensitivity (+/-)", 0.80 },
-            { "Mouse Jitter", 4 },
+            { "Mouse Jitter", 0 },
             { "Y Offset (Up/Down)", 0 },
             { "Y Offset (%)", 50 },
             { "X Offset (Left/Right)", 0 },
@@ -66,7 +67,7 @@ namespace Aimmy2.Class
             { "X Axis Percentage Adjustment", false },
             { "Y Axis Percentage Adjustment", false },
             { "Debug Mode", false },
-            { "Show FPS", false }
+            { "Show FPS", false },
         };
 
         public static Dictionary<string, dynamic> minimizeState = new()
@@ -89,9 +90,13 @@ namespace Aimmy2.Class
             { "Aiming Boundaries Alignment", "Center" },
             { "Mouse Movement Method", "Arduino" },
             { "Screen Capture Method", "DirectX" },
-            { "Monitor Selection", "\\\\.\\DISPLAY1"}
+            { "Execution Provider Type", "CUDA" }
         };
 
+        //public static IDXGIAdapter1 SelectedAdapter = null;
+        //public static List<IDXGIAdapter1> adapters = new List<IDXGIAdapter1>();
+
+      //  public static List<(int adapterIndex, int outputIndex, IDXGIOutput output)> monitors = new List<(int, int, IDXGIOutput)>();
         public static Dictionary<string, dynamic> colorState = new()
         {
             { "FOV Color", "#FF8080FF"},
@@ -112,5 +117,17 @@ namespace Aimmy2.Class
             { "Gun 1 Config", "" },
             { "Gun 2 Config", "" }
         };
+
+        public static T GetValueOrDefault<T>(Dictionary<string, T> dictionary, string key, T defaultValue)
+        {
+            if (dictionary.TryGetValue(key, out T? value))
+            {
+                return value;
+            }
+            else
+            {
+                return defaultValue;
+            }
+        }
     }
 }

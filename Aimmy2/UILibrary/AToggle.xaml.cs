@@ -1,4 +1,4 @@
-﻿using AimmyWPF.Class;
+﻿using Aimmy2.Class;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Animation;

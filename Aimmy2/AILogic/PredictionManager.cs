@@ -1,7 +1,7 @@
 ﻿using Accord.Statistics.Running;
-using Class;
+using Aimmy2.WinformsReplacement;
 
-namespace AILogic
+namespace Aimmy2.AILogic
 {
     internal class KalmanPrediction
     {
@@ -13,17 +13,17 @@ namespace AILogic
         }
 
         private readonly KalmanFilter2D kalmanFilter = new KalmanFilter2D();
-        private DateTime lastFilterUpdateTime = DateTime.UtcNow;
+        private long lastFilterUpdateTicks = DateTime.UtcNow.Ticks;
 
         public void UpdateKalmanFilter(Detection detection)
         {
             kalmanFilter.Push(detection.X, detection.Y);
-            lastFilterUpdateTime = DateTime.UtcNow;
+            lastFilterUpdateTicks = DateTime.UtcNow.Ticks;
         }
 
         public Detection GetKalmanPosition()
         {
-            double timeStep = (DateTime.UtcNow - lastFilterUpdateTime).TotalSeconds;
+            double timeStep = (DateTime.UtcNow.Ticks - lastFilterUpdateTicks) / TimeSpan.TicksPerSecond;
 
             double predictedX = kalmanFilter.X + kalmanFilter.XAxisVelocity * timeStep;
             double predictedY = kalmanFilter.Y + kalmanFilter.YAxisVelocity * timeStep;
@@ -32,12 +32,9 @@ namespace AILogic
         }
     }
 
+
     internal class WiseTheFoxPrediction
-    {
-        /// <summary>
-        /// Proof of Concept Prediction as written by @wisethef0x
-        /// "Exponential Moving Average"
-        /// </summary>
+    { // Proof of Concept Prediction as written by @wisethef0x
         public struct WTFDetection
         {
             public int X;
@@ -51,15 +48,18 @@ namespace AILogic
         private double emaX;
         private double emaY;
 
-        public WiseTheFoxPrediction()
-        {
-            lastUpdateTime = DateTime.UtcNow;
-        }
-
         public void UpdateDetection(WTFDetection detection)
         {
-            emaX = lastUpdateTime == DateTime.MinValue ? detection.X : alpha * detection.X + (1 - alpha) * emaX;
-            emaY = lastUpdateTime == DateTime.MinValue ? detection.Y : alpha * detection.Y + (1 - alpha) * emaY;
+            if (lastUpdateTime == DateTime.MinValue)
+            {
+                emaX = detection.X;
+                emaY = detection.Y;
+            }
+            else
+            {
+                emaX = alpha * detection.X + (1 - alpha) * emaX;
+                emaY = alpha * detection.Y + (1 - alpha) * emaY;
+            }
 
             lastUpdateTime = DateTime.UtcNow;
         }
@@ -74,31 +74,33 @@ namespace AILogic
     {
         public static List<int> xValues = [];
         public static List<int> yValues = [];
-
+        private static int currentIndex = 0;
+        private static int sumX = 0;
+        private static int sumY = 0;
         public static int AmountCount = 2;
 
         public static void AddValues(int x, int y)
         {
-            if (xValues.Count >= AmountCount)
-            {
-                xValues.RemoveAt(0);
-            }
-            if (yValues.Count >= AmountCount)
-            {
-                yValues.RemoveAt(0);
-            }
-            xValues.Add(x);
-            yValues.Add(y);
+            sumX -= xValues[currentIndex];
+            sumY -= yValues[currentIndex];
+
+            xValues[currentIndex] = x;
+            yValues[currentIndex] = y;
+
+            sumX += x;
+            sumY += y;
+
+            currentIndex = (currentIndex + 1) % AmountCount;
         }
 
         public static int GetSPX()
         {
-            return (int)(xValues.Average() * AmountCount + WinAPICaller.GetCursorPosition().X);
+            return (int)(sumX / (double)AmountCount + WinAPICaller.GetCursorPosition().X);
         }
 
         public static int GetSPY()
         {
-            return (int)(yValues.Average() * AmountCount + WinAPICaller.GetCursorPosition().Y);
+            return (int)(sumY / (double)AmountCount + WinAPICaller.GetCursorPosition().Y);
         }
     }
 

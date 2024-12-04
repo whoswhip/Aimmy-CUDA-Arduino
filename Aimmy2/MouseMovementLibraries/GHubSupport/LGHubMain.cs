@@ -1,4 +1,4 @@
-﻿using Other;
+﻿using Aimmy2.Other;
 using System.Windows;
 
 namespace Aimmy2.MouseMovementLibraries.GHubSupport

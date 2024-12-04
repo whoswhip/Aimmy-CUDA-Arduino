@@ -1,4 +1,4 @@
-﻿using Other;
+﻿using Aimmy2.Other;
 
 namespace Aimmy2.UILibrary
 {

@@ -1,8 +1,6 @@
-﻿using Other;
-using System.Management;
-using Visuality;
+﻿using System.Management;
 
-namespace Aimmy2.Class
+namespace Aimmy2.Other
 {
     internal class GetSpecs
     {
@@ -13,6 +11,12 @@ namespace Aimmy2.Class
             try
             {
                 ManagementObjectSearcher SpecsSearch = new("root\\CIMV2", "SELECT * FROM " + HardwareClass);
+
+                if (SpecsSearch.Get().Count == 0 || SpecsSearch == null)
+                {
+                    return "Not Found";
+                }
+
                 foreach (ManagementObject MJ in SpecsSearch.Get().Cast<ManagementObject>())
                 {
                     return Convert.ToString(MJ[Syntax])?.Trim();
@@ -21,9 +25,7 @@ namespace Aimmy2.Class
             }
             catch (Exception e)
             {
-
-                FileManager.LogError("Failed to get specs: " + e);
-                new NoticeBar(e.Message, 10000).Show();
+                FileManager.LogError("Failed to get specs: " + e, true);
                 return "Not Found";
             }
         }

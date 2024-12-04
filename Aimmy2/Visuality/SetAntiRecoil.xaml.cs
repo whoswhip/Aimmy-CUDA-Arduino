@@ -1,7 +1,6 @@
 ﻿using Aimmy2;
 using Aimmy2.Class;
-using AimmyWPF.Class;
-using InputLogic;
+using Aimmy2.InputLogic;
 using System.Windows;
 using System.Windows.Threading;
 

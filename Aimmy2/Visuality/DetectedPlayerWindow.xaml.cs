@@ -1,5 +1,8 @@
 ﻿using Aimmy2.Class;
-using Class;
+using Aimmy2.Other;
+using Aimmy2.WinformsReplacement;
+using System.Runtime.InteropServices;
+using System.Text;
 using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Interop;
@@ -13,6 +16,10 @@ namespace Visuality
     /// </summary>
     public partial class DetectedPlayerWindow : Window
     {
+        //const uint WDA_NONE = 0x00000000;
+        //const uint WDA_MONITOR = 0x00000001;
+        //const uint WDA_EXCLUDEFROMCAPTURE = 0x00000011;  // Windows 10 (version 1803) or higher
+
         protected override void OnSourceInitialized(EventArgs e)
         {
             base.OnSourceInitialized(e);
@@ -24,7 +31,6 @@ namespace Visuality
             InitializeComponent();
 
             Title = "";
-
             DetectedTracers.X1 = (WinAPICaller.ScreenWidth / 2) / WinAPICaller.scalingFactorX;
             DetectedTracers.Y1 = WinAPICaller.ScreenHeight / WinAPICaller.scalingFactorY;
 
@@ -34,13 +40,14 @@ namespace Visuality
             PropertyChanger.ReceiveDPWBorderThickness = ChangeBorderThickness;
             PropertyChanger.ReceiveDPWOpacity = ChangeOpacity;
         }
-
+       
         private void UpdateDPColor(Color NewColor)
         {
             DetectedPlayerFocus.BorderBrush = new SolidColorBrush(NewColor);
             DetectedPlayerConfidence.Foreground = new SolidColorBrush(NewColor);
             DetectedTracers.Stroke = new SolidColorBrush(NewColor);
         }
+
         public void MoveToMonitor(Screen selectedMonitor)
         {
             // Set position and size before maximizing

@@ -1,6 +1,5 @@
 ﻿using Aimmy2.Class;
-using AimmyWPF.Class;
-using Class;
+using Aimmy2.WinformsReplacement;
 using System.IO;
 using System.Windows;
 using System.Windows.Input;

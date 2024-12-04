@@ -1,4 +1,5 @@
-﻿using Microsoft.Win32;
+﻿using Aimmy2.Other;
+using Microsoft.Win32;
 using System.Diagnostics;
 using System.IO;
 using System.Management;
@@ -7,7 +8,7 @@ using System.Runtime.InteropServices;
 using System.Windows;
 using Visuality;
 
-namespace MouseMovementLibraries.RazerSupport
+namespace Aimmy2.MouseMovementLibraries.RazerSupport
 {
     internal class RZMouse
     {
@@ -29,69 +30,8 @@ namespace MouseMovementLibraries.RazerSupport
 
         #endregion Razer Variables
 
-        public static bool CheckForRazerDevices()
-        {
-            Razer_HID.Clear();
-            using var searcher = new ManagementObjectSearcher("SELECT * FROM Win32_PnPEntity WHERE Manufacturer LIKE 'Razer%'");
-            var razerDevices = searcher.Get().Cast<ManagementBaseObject>();
 
-            Razer_HID.AddRange(razerDevices.Select(device => device["DeviceID"]?.ToString() ?? string.Empty));
-
-            return Razer_HID.Count != 0;
-        }
-
-        private static readonly string[] RazerSynapseProcesses =
-        {
-            "RazerAppEngine",
-            "Razer Synapse",
-            "Razer Synapse Beta",
-            "Razer Synapse 3",
-            "Razer Synapse 3 Beta"
-        };
-        private static bool IsRazerSynapseRunning()
-        {
-            return RazerSynapseProcesses.Any(processName => Process.GetProcessesByName(processName).Any());
-        }
-        public static async Task<bool> CheckRazerSynapseInstall() // returns true if running/installed and false if not installed/running
-        {
-            if (IsRazerSynapseRunning()) return true;
-
-            var result = MessageBox.Show("Razer Synapse is not running (Or we cannot find the process), do you have it installed?",
-                                         "Aimmy - Razer Synapse", MessageBoxButton.YesNo);
-            if (result == MessageBoxResult.No)
-            {
-                await InstallRazerSynapse();
-                return false;
-            }
-
-            bool isSynapseInstalled = Directory.Exists(@"C:\Program Files\Razer") ||
-                                      Directory.Exists(@"C:\Program Files (x86)\Razer") ||
-                                      CheckRazerRegistryKey();
-
-            if (!isSynapseInstalled)
-            {
-                var installConfirmation = MessageBox.Show("Razer Synapse is not installed, would you like to install it?",
-                                                          "Aimmy - Razer Synapse", MessageBoxButton.YesNo);
-
-                if (installConfirmation == MessageBoxResult.Yes)
-                {
-                    await InstallRazerSynapse();
-                    return false;
-                }
-            }
-
-            return isSynapseInstalled;
-        }
-
-        private static bool CheckRazerRegistryKey()
-        {
-            using (RegistryKey key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Razer"))
-            {
-                return key != null ? true : false;
-            }
-        }
-
-        private static async Task InstallRazerSynapse()
+        public static async Task InstallRazerSynapse()
         {
             using HttpClient httpClient = new();
             var response = await httpClient.GetAsync(new Uri("https://rzr.to/synapse-new-pc-download-beta"));
@@ -117,7 +57,7 @@ namespace MouseMovementLibraries.RazerSupport
         {
             try
             {
-                new NoticeBar($"{rzctlpath} is missing, attempting to download {rzctlpath}.", 4000).Show();
+                FileManager.LogWarning($"{rzctlpath} is missing, attempting to download {rzctlpath}.", true);
 
                 using HttpClient httpClient = new();
                 using var response = await httpClient.GetAsync(new Uri(rzctlDownloadUrl), HttpCompletionOption.ResponseHeadersRead);
@@ -127,18 +67,18 @@ namespace MouseMovementLibraries.RazerSupport
                     using var contentStream = await response.Content.ReadAsStreamAsync();
                     using var fileStream = new FileStream(rzctlpath, FileMode.Create, FileAccess.Write, FileShare.None, 4096, true);
                     await contentStream.CopyToAsync(fileStream);
-                    new NoticeBar($"{rzctlpath} has downloaded successfully, please re-select Razer Synapse to load the DLL.", 4000).Show();
+                    FileManager.LogInfo($"{rzctlpath} has downloaded successfully, please re-select Razer Synapse to load the DLL.", true, 4000);
                 }
             }
             catch
             {
-                new NoticeBar($"{rzctlpath} has failed to install, please try a different Mouse Movement Method.", 4000).Show();
+                FileManager.LogError($"{rzctlpath} has failed to install, please try a different Mouse Movement Method.", true);
             }
         }
 
         public static async Task<bool> Load()
         {
-            if (!await CheckRazerSynapseInstall())
+            if (!await RequirementsManager.CheckRazerSynapseInstall())
             {
                 return false;
             }
@@ -149,7 +89,7 @@ namespace MouseMovementLibraries.RazerSupport
                 return false;
             }
 
-            if (!CheckForRazerDevices())
+            if (!RequirementsManager.CheckForRazerDevices(Razer_HID))
             {
                 MessageBox.Show("No Razer Peripheral is detected, this Mouse Movement Method is unusable.", "Aimmy");
                 return false;

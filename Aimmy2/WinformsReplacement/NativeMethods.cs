@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace WinformsReplacement
+namespace Aimmy2.WinformsReplacement
 {
     /// <summary>
     /// From: https://stackoverflow.com/questions/254197/how-can-i-get-the-active-screen-dimensions
@@ -12,10 +12,10 @@ namespace WinformsReplacement
         public const int MONITOR_DEFAULTTONEAREST = 0x00000002;
 
         [DllImport("user32.dll")]
-        public static extern IntPtr MonitorFromWindow(IntPtr handle, int flags);
+        public static extern nint MonitorFromWindow(nint handle, int flags);
 
         [DllImport("user32.dll")]
-        public static extern bool GetMonitorInfo(IntPtr hMonitor, NativeMonitorInfo lpmi);
+        public static extern bool GetMonitorInfo(nint hMonitor, NativeMonitorInfo lpmi);
 
         [Serializable, StructLayout(LayoutKind.Sequential)]
         public struct NativeRectangle(int left, int top, int right, int bottom)

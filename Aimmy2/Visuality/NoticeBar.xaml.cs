@@ -1,5 +1,4 @@
 ﻿using Aimmy2.Class;
-using AimmyWPF.Class;
 using System.Windows;
 using System.Windows.Interop;
 
@@ -12,7 +11,7 @@ namespace Visuality
     {
         private static int openNoticeCount = 0;
         private const int NoticeHeight = 40; // Height of each notice
-        private const int Spacing = 5;       // Spacing between notices
+        private const int Spacing = 6;       // Spacing between notices
         private const int BaseMargin = 100;  // Base margin from the bottom
         private readonly int WaitingTime = 4000;
 
