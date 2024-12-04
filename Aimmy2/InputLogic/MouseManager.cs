@@ -184,7 +184,7 @@ namespace InputLogic
                     break;
 
                 default:
-                    mouse_event(MOUSEEVENTF_MOVE, (uint)newPosition.X, (uint)newPosition.Y, 0, 0);
+                    arduinoController.SendMouseCoordinates(newPosition.X, newPosition.Y);
                     break;
             }
 
