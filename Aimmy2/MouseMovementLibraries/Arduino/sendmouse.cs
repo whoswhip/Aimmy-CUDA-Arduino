@@ -4,6 +4,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Security.Cryptography;
 using Visuality;
+using System.Windows;
 
 
 namespace Aimmy2.MouseMovementLibraries.ArduinoSupport
@@ -16,8 +17,6 @@ namespace Aimmy2.MouseMovementLibraries.ArduinoSupport
             string exePath = FindMouseMovementExe();
             new NoticeBar($"Arduino Mouse is starting from {exePath}", 5000).Show();
 
-            
-
             ProcessStartInfo start = new ProcessStartInfo
             {
                 FileName = exePath,
@@ -26,6 +25,11 @@ namespace Aimmy2.MouseMovementLibraries.ArduinoSupport
             };
 
             Process process = Process.Start(start);
+            Thread.Sleep(5000);
+            if (process.HasExited)
+            {
+                MessageBox.Show("Arduino Movement has unexpectedly closed. (Make sure your Arduino is connected)", "Aimmy");
+            }
         }
         static string FindMouseMovementExe()
         {
@@ -56,13 +60,22 @@ namespace Aimmy2.MouseMovementLibraries.ArduinoSupport
                                 hashString.AppendFormat("{0:X2}", b);
                             }
 
-                            if (hashString.ToString().Equals("8BEB14B3C04398B50E524054DF81AAC5BE5A17053E5E232945EE9DCDE1BE9B4E"))
+                            if (hashString.ToString().Equals("A871EC5FEF87ABA50C97E0198A065F2F130AA8155E0A20E9449BE2DDE3DA2447")) // protected mousemovement.exe
+                            {
+
+                            }
+                            else if (hashString.ToString().Equals("8BEB14B3C04398B50E524054DF81AAC5BE5A17053E5E232945EE9DCDE1BE9B4E")) // default mousemovement.exe
                             {
                                 stream.Close();
                                 string guid = Guid.NewGuid().ToString();
                                 File.Move(file, $"{guid}.exe");
                                 string filepath = Path.Combine(currentDirectory, $"{guid}.exe");
                                 return filepath;
+                            }
+                            else
+                            {
+                                stream.Close();
+                                continue;
                             }
                         }
                     }
