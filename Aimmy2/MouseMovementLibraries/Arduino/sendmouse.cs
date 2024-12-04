@@ -11,24 +11,32 @@ namespace Aimmy2.MouseMovementLibraries.ArduinoSupport
 {
     public static class StartArduino
     {
+        public static string filepath = null;
         public static void StartArduinoMouse()
         {
-            string currentDirectory = AppDomain.CurrentDomain.BaseDirectory;
-            string exePath = FindMouseMovementExe();
-            new NoticeBar($"Arduino Mouse is starting from {exePath}", 5000).Show();
-
-            ProcessStartInfo start = new ProcessStartInfo
+            try
             {
-                FileName = exePath,
-                UseShellExecute = true,
-                CreateNoWindow = false,
-            };
+                string currentDirectory = AppDomain.CurrentDomain.BaseDirectory;
+                filepath = FindMouseMovementExe();
+                new NoticeBar($"Arduino Mouse is starting from {filepath}", 5000).Show();
 
-            Process process = Process.Start(start);
-            Thread.Sleep(5000);
-            if (process.HasExited)
+                ProcessStartInfo start = new ProcessStartInfo
+                {
+                    FileName = filepath,
+                    UseShellExecute = true,
+                    CreateNoWindow = false,
+                };
+
+                Process process = Process.Start(start);
+                Thread.Sleep(5000);
+                if (process.HasExited)
+                {
+                    MessageBox.Show("Arduino Movement has unexpectedly closed. (Make sure your Arduino is connected)", "Aimmy");
+                }
+            }
+            catch
             {
-                MessageBox.Show("Arduino Movement has unexpectedly closed. (Make sure your Arduino is connected)", "Aimmy");
+                MessageBox.Show("Arduino Movement has failed to start.", "Aimmy");
             }
         }
         static string FindMouseMovementExe()
